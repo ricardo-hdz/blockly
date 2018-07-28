@@ -172,3 +172,7 @@ button {
 .run {
   background-position: -42px 0px;
 }
+
+#files {
+  padding-left: 10px;
+}

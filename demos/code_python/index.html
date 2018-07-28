@@ -19,8 +19,7 @@
   <table width="100%" height="100%">
     <tr>
       <td>
-        <h1><a href="https://developers.google.com/blockly/">Blockly</a>&rlm; &gt;
-          <a href="../index.html">Demos</a>&rlm; &gt;
+        <h1>
           <span id="title">...</span>
         </h1>
       </td>
@@ -28,13 +27,14 @@
         <select id="languageMenu"></select>
       </td>
     </tr>
+
     <tr>
       <td colspan=2>
         <table width="100%">
           <tr id="tabRow" height="1em">
             <td id="tab_blocks" class="tabon">...</td>
             <td class="tabmin">&nbsp;</td>
-            <td id="tab_python" class="taboff">Python</td>
+            <!-- <td id="tab_python" class="taboff">Python</td> -->
             <td class="tabmin">&nbsp;</td>
             <td class="tabmax">
               <button id="trashButton" class="notext" title="...">
@@ -50,6 +50,11 @@
           </tr>
         </table>
       </td>
+    </tr>
+    <tr>
+      <button id="saveBlocks">Save Blocks</button>
+      <span>Load Blocks</span>
+      <input type="file" id="files" name="files[]" multiple />
     </tr>
     <tr>
       <td height="99%" colspan=2 id="content_area">

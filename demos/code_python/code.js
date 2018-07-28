@@ -239,7 +239,7 @@ Code.LANG = Code.getLang();
  * @private
  */
 // Code.TABS_ = ['blocks', 'javascript', 'php', 'python', 'dart', 'lua', 'xml'];
-Code.TABS_ = ['blocks', 'python'];
+Code.TABS_ = ['blocks','python'];
 
 Code.selected = 'blocks';
 
@@ -443,6 +443,26 @@ Code.init = function() {
   Code.bindClick('trashButton',
       function() {Code.discard(); Code.renderContent();});
   Code.bindClick('runButton', Code.runJS);
+  Code.bindClick('saveBlocks', function() {
+    var xml = Blockly.Xml.workspaceToDom(Code.workspace);
+    var xml_text = Blockly.Xml.domToText(xml);
+    //save to file
+    var file = new Blob([xml_text], {type: 'text/xml'});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, 'blocky.xml');
+    else { // Others
+        var a = document.createElement("a"),
+            url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = 'blocky.xml';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+  });
   // Disable the link button if page isn't backed by App Engine storage.
   var linkButton = document.getElementById('linkButton');
   if ('BlocklyStorage' in window) {
@@ -456,11 +476,11 @@ Code.init = function() {
     linkButton.className = 'disabled';
   }
 
-  for (var i = 0; i < Code.TABS_.length; i++) {
-    var name = Code.TABS_[i];
-    Code.bindClick('tab_' + name,
-        function(name_) {return function() {Code.tabClick(name_);};}(name));
-  }
+//   for (var i = 0; i < Code.TABS_.length; i++) {
+//     var name = Code.TABS_[i];
+//     Code.bindClick('tab_' + name,
+//         function(name_) {return function() {Code.tabClick(name_);};}(name));
+//   }
   onresize();
   Blockly.svgResize(Code.workspace);
 
@@ -468,12 +488,21 @@ Code.init = function() {
   window.setTimeout(Code.importPrettify, 1);
 
   // Attach listener to create elemnt so we can render code
+  // when a block is drop into the canvas
+  var eventsToRenderCode = [
+    Blockly.Events.BLOCK_CHANGE,
+    Blockly.Events.BLOCK_CREATE,
+    Blockly.Events.BLOCK_DELETE,
+    Blockly.Events.BLOCK_MOVE
+  ];
   Code.workspace.addChangeListener(function(event) {
     //   debugger;
-    if (event.type == Blockly.Events.BLOCK_CREATE) {
+    if (eventsToRenderCode.indexOf(event.type) !== -1) {
         Code.attemptCodeGeneration(Blockly.Python, 'py');
     }
   });
+  //bind event to load blocky XML file
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
 };
 
 /**
@@ -562,3 +591,23 @@ document.write('<script src="msg/' + Code.LANG + '.js"></script>\n');
 document.write('<script src="../../msg/js/' + Code.LANG + '.js"></script>\n');
 
 window.addEventListener('load', Code.init);
+
+function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++) {
+      var reader = new FileReader();
+
+      reader.addEventListener("load", function () {
+        // var file = new Blob([reader.result], {type: 'text/xml'});
+        debugger;
+        var xml = Blockly.Xml.textToDom(reader.result);
+        Blockly.Xml.domToWorkspace(xml, Code.workspace);
+      }, false);
+
+      if (f) {
+        reader.readAsText(f);
+      }
+    }
+  }
